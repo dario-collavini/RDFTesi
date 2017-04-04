@@ -51,12 +51,13 @@ int main(int argc, char* argv[])
 	EventConverter conv;
 
 	e->finalize();
-	//Subscription all' rdf constructor, che farà da intermediario tra Trex e il vero listener(client), per produrre il grafo rdf
+	//Subscription all'RDF Constructor, che farà da intermediario tra Trex e il vero listener(client), per produrre l'evento complesso RDF
 	e->addResultListener(constructor->getTRexListener());
 	
 /*Subscription: il client passa subscription e regole.
-*		Le subscription sono salvate nell'engine, mentre un parser traduce le regole in regole TRex ed estrae le query passandole
-*		a RDFox. Passa inoltre il template RDF dell'evento complesso a un componente RDF Constructor, incaricato di produrre l'evento RDF *		corrispondente quando viene generato il corrispondente CE Tesla da TRex.
+*		Le subscription sono salvate nell'RDFConstructor, mentre un parser traduce le regole in regole TRex ed estrae le query passandole
+*		a RDFox. Passa inoltre il template RDF dell'evento complesso all'RDF Constructor, incaricato di produrre l'evento RDF 
+*		corrispondente quando viene generato il CE Tesla da TRex.
 */
 
 //Parser
