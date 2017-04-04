@@ -46,7 +46,7 @@ SPARQL_QUERY :   '['
             |   '\\'    {ss << '\\';}
             |   '\"'   {ss << '"';}
             )
-        |    WS+ {ss << ' ';}
+        |    [ ]+ {ss << ' ';}
         |   ~('\\'|']') {ss << ((char)_input->LA(-1));}
         )*
         ']'
@@ -68,8 +68,8 @@ expr: expr BINOP_MUL expr | expr BINOP_ADD expr | '(' expr ')' | (param_atom | a
 staticAttr_definition: SPARQL_VAR ':=' static_reference;
 attr_definition: '(' VALTYPE ')' SPARQL_VAR ':=' expr;
 attr_constraint: SPARQL_VAR OPERATOR static_reference;
-attr_parameter: '[' VALTYPE ']' SPARQL_VAR OPERATOR expr;
-predicate : EVT_NAME (':=' SPARQL_QUERY event_alias?)? ;
+attr_parameter: '(' VALTYPE ')' SPARQL_VAR OPERATOR expr;
+predicate : EVT_NAME (':=' SPARQL_QUERY ( '(' attr_constraint (',' attr_constraint)* ')' )? event_alias?)? ;
 event_alias : 'as' EVT_NAME;
 terminator : predicate;
 positive_predicate : 'and' SEL_POLICY predicate (neg_one_reference | neg_between);
@@ -79,14 +79,14 @@ negative_predicate : 'and' 'not' predicate (neg_one_reference | neg_between);
 pattern_predicate : positive_predicate | negative_predicate;
 event_declaration : INT_VAL '=>' EVT_NAME;
 event_declarations : event_declaration (',' event_declaration)*;
-parametrization : packet_reference '=' packet_reference (',' packet_reference '=' packet_reference)*;
+parametrization : packet_reference ':=' packet_reference (',' packet_reference ':=' packet_reference)*;
 prefix_uri : URI_PREFIX_NAME ;
 full_uri : URI_FULL_NAME ;
 uri : prefix_uri | full_uri;  
 sub : uri | SPARQL_VAR;
 pred : uri | SPARQL_VAR; 
 obj : uri | SPARQL_VAR;
-triple : sub pred obj '.' ; 
+triple : sub (WS)* pred (WS)* obj (WS)* '.' ; 
 rdf_pattern : '{' (triple)* '}';
 ce_definition : EVT_NAME ':=' rdf_pattern ; 
 pattern : terminator (pattern_predicate)*;

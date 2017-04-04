@@ -10,9 +10,11 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <queue>
 
-//For print purposes
-int a = 1;
+const int maxSize = 100;
+std::queue<const char*> inputQueue;
+int a = 1;//For print purposes
 
 void processPubPkt(vector<PubPkt*> pubPkts, TRexEngine* e){
 	if(pubPkts.size() == 0) std::cout << "\n\n\n";
@@ -36,7 +38,7 @@ int main(int argc, char* argv[])
 *	EventConverter: 6)implementa traduzione eventoRDF ----> eventoTesla (lowering rule) 
 */
 
-	const char* type = "seq";
+	const char* type = "seq"; //cfr DataStore.java di RDFox per altri tipi (par-simple-nn, par-simple-nw, par-simple-ww, par-complex-nn, par-complex-nw, par-complex-ww)
 	const char* kb = "./Files/kbradio.ttl";
 	const char* dlogRules = "./Files/inf.dlog";
 	int prefixesArrayLength = 4;
@@ -63,16 +65,10 @@ int main(int argc, char* argv[])
 	std::stringstream buffer;
 	buffer << regola.rdbuf();
 	std::string str = buffer.str();
-	std::cout << "5. Parsing regola...\n"; 
 	parser.parse(str, store, e, constructor);
 
 //Subscription
-	Constraint c[1];
-	strcpy(c[0].name, "value");
-	c[0].type = INT;
-	c[0].op = GT;
-	c[0].intVal = 140;
-	SubPkt *sub = new SubPkt(3, c, 1);
+	SubPkt *sub = new SubPkt(3);//3 è l'ID assegnato all'evento complesso nella regola SCEP (cfr. "teslardf_rule.txt")
 	RDFResultListener *listener = new TestRDFListener(sub);
 	constructor->addRDFListener(listener);
 
@@ -81,31 +77,33 @@ int main(int argc, char* argv[])
 *	   2)valuto query.
 *	   3)passo risultati al Result converter (lowering rule)
 *	   4)eventi convertiti mandati in input a TRex
-*	   5)TRex fa processing e manda risultati ai vari listener<---RDF Constructor che ricevendoli è incaricato di produrre il CE RDF come output
+*	   5)TRex fa processing e manda risultati al listener<---RDF Constructor che ricevendoli è incaricato di produrre il CE RDF come output ai    *            vari RDF listener
 */	
 	const char* e1 = "./TestEvents/t1.ttl";
-	const char* e11 = "./TestEvents/t2.ttl";
-	const char* e2 = "./TestEvents/t3.ttl";
-	const char* e3 = "./TestEvents/t4.ttl";
-	const char* e4 = "./TestEvents/t6.ttl";
-	const char* e5 = "./TestEvents/t7.ttl";
-	const char* e6 = "./TestEvents/t8.ttl";
+	const char* e2 = "./TestEvents/t2.ttl";
+	const char* e3 = "./TestEvents/t3.ttl";
+	const char* e4 = "./TestEvents/t4.ttl";
+	const char* e5 = "./TestEvents/t6.ttl";
+	const char* e6 = "./TestEvents/t7.ttl";
+	const char* e7 = "./TestEvents/t8.ttl";
 	
-	std::cout << "6. Runtime... arrivano eventi rdf:\n";
-	std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
-	processPubPkt(conv.convertToTesla(store->processRdfEvent(e1)), e);
-	std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
-	processPubPkt(conv.convertToTesla(store->processRdfEvent(e11)), e);
-	std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
-	processPubPkt(conv.convertToTesla(store->processRdfEvent(e2)), e);
-	std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
-	processPubPkt(conv.convertToTesla(store->processRdfEvent(e3)), e);
-	std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
-	processPubPkt(conv.convertToTesla(store->processRdfEvent(e4)), e);
-	std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
-	processPubPkt(conv.convertToTesla(store->processRdfEvent(e5)), e);
-	std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
-	processPubPkt(conv.convertToTesla(store->processRdfEvent(e6)), e);
+	if(inputQueue.size() < maxSize) inputQueue.push(e1);
+	if(inputQueue.size() < maxSize) inputQueue.push(e2);
+	if(inputQueue.size() < maxSize) inputQueue.push(e3);
+	if(inputQueue.size() < maxSize) inputQueue.push(e4);
+	if(inputQueue.size() < maxSize) inputQueue.push(e5);
+	if(inputQueue.size() < maxSize) inputQueue.push(e6);
+	if(inputQueue.size() < maxSize) inputQueue.push(e7);
+
+
+	while(!inputQueue.empty()){
+		std::cout << "--------------------Evento " << a << "-----------------------------" << "\n";
+		const char* RDFevent = inputQueue.front();
+		inputQueue.pop();
+		std::vector<Event*> events = store->processRdfEvent(RDFevent);
+		std::vector<PubPkt*> teslaEvents = conv.convertToTesla(events, constructor);
+		processPubPkt(teslaEvents, e);
+	}
 	std::cout << "-------------------------------------------------------------------" << "\n";
 
 	return 0;

@@ -41,8 +41,6 @@ RDFStore::~RDFStore(){
 	delete this->dlogRules;
 	delete[] this->prefixesArray;
 	for (std::map<int,RuleQuery*>::iterator query = this->queries.begin(); query != this->queries.end(); query++){	
-		delete query->second->queryName;
-		delete query->second->queryString;
 		delete query->second;
 	}
 }
@@ -56,16 +54,12 @@ void RDFStore::initialize(const char* type, const char* kb, const char* dlog, co
 	this->prefixesArrayLength = prefixesLength;
 	RDFoxDataStore_Create(this->store, this->type, NULL , 0);
 	RDFoxDataStore_Initialize(*(this->store));
-	std::cout << "1. Inizializzato un Data Store di tipo " << this->type << "\n";
 	RDFoxDataStore_ImportFile(*(this->store), this->kb , 0, false);
-	std::cout << "2. Import file kbradio (triple importate ma non materializzate)\n";
 	RDFoxDataStore_ImportFile(*(this->store), this->dlogRules , 0, false);
-	std::cout << "3. Import file regole datalog\n";
 	RDFoxDataStore_ApplyRules(*(this->store), false);
-	std::cout << "4. Materializzazione triple...\n";
 }
 
-//Founds var specified in the query string
+//Finds var specified in the query string
 std::vector<std::string> getVars(std::string query, int all){
 	std::vector<std::string> var;
 	std::string temp;
@@ -116,13 +110,15 @@ std::vector<std::string> findVars(const char* query){
 	}
 }
 
-void RDFStore::addQuery(int type, const char* name, const char* string){
-	RuleQuery *temp = new RuleQuery;
-	temp->eventType = type;
-	temp->queryName = name;
-	temp->queryString = string;
-	temp->vars = findVars(string);
-	queries.insert(std::pair<int, RuleQuery*>(type, temp));
+void RDFStore::addQuery(int type, std::string name, std::string string){
+	if(queries.find(type) == queries.end()){//add a new query if it is not present
+		RuleQuery *temp = new RuleQuery;
+		temp->eventType = type;
+		temp->queryName = name;
+		temp->queryString = string;
+		temp->vars = findVars(string.c_str());
+		queries.insert(std::pair<int, RuleQuery*>(type, temp));
+	}
 }
 
 //Import update: 0 ADD
@@ -154,11 +150,12 @@ std::vector<Event*> RDFStore::evaluateQueries(){
 	return allEvents;
 }
 
+//Calls RDFox API
 std::vector<Event*> RDFStore::evaluateSingleQuery(RuleQuery* q){
 	std::vector<Event*> events;
 	Resource *tempRes;
 	Event *tempEvent;								
-	RDFoxDataStoreTupleIterator_CompileQuery(queryIterator,*(this->store), q->queryString, NULL, 0, this->prefixesArray, this->prefixesArrayLength);
+	RDFoxDataStoreTupleIterator_CompileQuery(queryIterator,*(this->store), q->queryString.c_str(), NULL, 0, this->prefixesArray, this->prefixesArrayLength);
 	RDFoxDataStoreTupleIterator_GetArity(this->numVars, *(this->queryIterator));
 	RDFoxDataStoreTupleIterator_Open(this->isQueryMatched, *(this->queryIterator), *(this->numVars), this->resourceIDs);
 	while(*(this->isQueryMatched) != 0){//while there are still  query results, do the loop and create a new event
@@ -170,7 +167,7 @@ std::vector<Event*> RDFStore::evaluateSingleQuery(RuleQuery* q){
 			//double call, otherwise resBuffer is not properly filled (RDFox bug?)
 			RDFoxDataStoreTupleIterator_GetResource(*queryIterator, resourceIDs[j], datatypeID, resBuffer, bufferLength);
 			RDFoxDataStoreTupleIterator_GetResource(*queryIterator, resourceIDs[j], datatypeID, resBuffer, bufferLength);
-			strcpy(tempRes->lexicalForm, this->resBuffer);	
+			strcpy(tempRes->lexicalForm, this->resBuffer);
 			tempRes->datatypeID = *(this->datatypeID);
 			tempEvent->attributes.insert(std::pair<std::string, Resource*>(q->vars[j],tempRes));
 		}

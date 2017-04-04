@@ -29,7 +29,7 @@ public:
 	 * Adds a query that will be evaluated on the store during runtime execution.
 	 * Queries are extracted from RDF Tesla rules.
 	 */
-	void addQuery(int eventType, const char* queryName, const char* queryString);
+	void addQuery(int eventType, std::string queryName, std::string queryString);
 
 	/**
 	 * Returns prefixes used in the store.

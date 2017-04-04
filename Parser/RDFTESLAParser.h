@@ -14,11 +14,11 @@ public:
   enum {
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
     T__7 = 8, T__8 = 9, T__9 = 10, T__10 = 11, T__11 = 12, T__12 = 13, T__13 = 14, 
-    T__14 = 15, T__15 = 16, T__16 = 17, T__17 = 18, ASSIGN = 19, DEFINE = 20, 
-    FROM = 21, WITH = 22, WHERE = 23, CONSUMING = 24, VALTYPE = 25, SEL_POLICY = 26, 
-    AGGR_FUN = 27, OPERATOR = 28, BINOP_MUL = 29, BINOP_ADD = 30, INT_VAL = 31, 
-    FLOAT_VAL = 32, BOOL_VAL = 33, STRING_VAL = 34, SPARQL_QUERY = 35, EVT_NAME = 36, 
-    URI_PREFIX_NAME = 37, URI_FULL_NAME = 38, SPARQL_VAR = 39, WS = 40
+    T__14 = 15, ASSIGN = 16, DEFINE = 17, FROM = 18, WITH = 19, WHERE = 20, 
+    CONSUMING = 21, VALTYPE = 22, SEL_POLICY = 23, AGGR_FUN = 24, OPERATOR = 25, 
+    BINOP_MUL = 26, BINOP_ADD = 27, INT_VAL = 28, FLOAT_VAL = 29, BOOL_VAL = 30, 
+    STRING_VAL = 31, SPARQL_QUERY = 32, EVT_NAME = 33, URI_PREFIX_NAME = 34, 
+    URI_FULL_NAME = 35, SPARQL_VAR = 36, WS = 37
   };
 
   enum {
@@ -262,6 +262,8 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EVT_NAME();
     antlr4::tree::TerminalNode *SPARQL_QUERY();
+    std::vector<Attr_constraintContext *> attr_constraint();
+    Attr_constraintContext* attr_constraint(size_t i);
     Event_aliasContext *event_alias();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -501,6 +503,8 @@ public:
     SubContext *sub();
     PredContext *pred();
     ObjContext *obj();
+    std::vector<antlr4::tree::TerminalNode *> WS();
+    antlr4::tree::TerminalNode* WS(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

@@ -52,10 +52,12 @@ void defineAttFromType(Attribute* att, Resource* res, Event* event){
 }
 
 //Converts RdfEvent into TeslaEvent and frees memory about RdfEvent
-std::vector<PubPkt*> EventConverter::convertToTesla(std::vector<Event*> events){
+std::vector<PubPkt*> EventConverter::convertToTesla(std::vector<Event*> events, RDFConstructor* constructor){
 	std::vector<PubPkt*> pubPkts;
+	std::map<int, Template*> templateMap = constructor->getRdfEventTemplates();
 	for(std::vector<Event*>::iterator event = events.begin() ; event != events.end(); event++){
 		int num = (*event)->attributes.size();
+		int type = (*event)->eventType;
 		Attribute tempAtt[num];
 		int i = 0;
 		for(std::map<std::string, Resource*>::iterator res = (*event)->attributes.begin(); res != (*event)->attributes.end(); res++){
@@ -65,7 +67,18 @@ std::vector<PubPkt*> EventConverter::convertToTesla(std::vector<Event*> events){
 			delete res->second;//PubPkt created, frees event memory (no more needed)
 			i++;
 		}
-		PubPkt* temp= new PubPkt((*event)->eventType, tempAtt, num);
+		PubPkt* temp= new PubPkt(type, tempAtt, num);
+		for(std::map<int, Template*>::iterator it = templateMap.begin(); it != templateMap.end(); it++){
+			Template* templateCE = it->second;
+			if(templateCE->isRuleAllWithin == true){
+				if(type == templateCE->allRuleInfos->typeTerminator){
+					templateCE->allRuleInfos->RootTimestamps.push_back(temp->getTimeStamp());
+				}
+				if(type == templateCE->allRuleInfos->typeEventAll){
+					templateCE->allRuleInfos->AllTimestamps.push_back(temp->getTimeStamp());
+				}
+			}
+		}
 		pubPkts.push_back(temp);
 		delete *event;
 	}

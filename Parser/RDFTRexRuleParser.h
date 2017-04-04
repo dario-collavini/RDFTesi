@@ -43,8 +43,11 @@ public:
 private:
 	 std::map<std::string, int> eventId_map;
 	 std::map<std::string, int> predicatesIds;
+	 std::map<std::string, std::string> eventCompositions;
+	 std::map<std::string, int> negPredIds;
 	 int predicateCount = 0;
 	 int aggregateCount = 0;
+	 int negationCount = 0;
 	 Template* templateCE;
 	 CompositeEventTemplate* ceTRex;
 	 std::vector<std::tuple<int, std::string, std::string> > queries;
@@ -52,5 +55,4 @@ private:
 
 	 OpTree* buildOpTree(RDFTESLAParser::ExprContext* expr, ValType valType);
 	 OpTree* recursivelyNavigateExpression(RDFTESLAParser::ExprContext* expr, OpTree* tree, ValType valType);
-
 };

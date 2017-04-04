@@ -4,6 +4,7 @@
 #include <TRex2/Packets/PubPkt.h>
 #include "RDFStore.h"
 #include "../Common/RDFStructures.h"
+#include "../RDFConstructor/RDFConstructor.h"
 #include <vector>
 #include <string>
 
@@ -18,7 +19,7 @@ public:
 	 * Takes as input the result of sparql queries over the store, as a vector of Events,
 	 * and convert it into a vector of PubPkts, that will be the TRex engine input.
 	 */
-	std::vector<PubPkt*> convertToTesla(std::vector<Event*> events);
+	std::vector<PubPkt*> convertToTesla(std::vector<Event*> events, RDFConstructor* constructor);
 };
 
 #endif /*EVENTCONVERTER_H*/
